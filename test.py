@@ -23,13 +23,14 @@ api = ApiHandler(auth_handler=auth)
 ##print api.get_user_info().__dict__
 ##prof = api.get_user_info()
 ##print prof.__dict__
-#3print prof.posts[0].__dict__
+##print prof.posts[5].__dict__
+##print prof.posts[5].comments[0].__dict__
 ##next_id = prof.next_id
 ##next_obj = prof.next_obj
 ##print '================================================================'
 ##print api.get_user_info(next_id=next_id,next_obj=next_obj).posts
 ##print api.get_user_info(user_id='102878059071970571610').__dict__
-##print api.get_post_info(item_id='z13jffvoaymmylkhg04cehhrwtmusn2jbhs')
+##print api.get_post_info(item_id='z12gcjqxeknmjfa2l22nfhzagqq4sntvi').posts[0].__dict__
 ##print api.get_followers().__dict__
 ##print api.get_circles().__dict__
 ##print api.update_post(message=u'Public _test_ @115589978196270409444',scope_type=Builder.ANYONE)
@@ -44,7 +45,7 @@ api = ApiHandler(auth_handler=auth)
 ##print api.update_post(message=u'リンクテスト',scope_type=Builder.ANYONE,media=media).__dict__
 ##media=api.media_video('http://www.youtube.com/watch?v=KQ6zr6kCPj8')
 ##print api.update_post(message=u'ようつべリンクテスト',scope_type=Builder.ANYONE,media=media).__dict__
-#print api.get_notification()
+##print api.get_notification().__dict__
 ##print api.get_dashboard().__dict__
 ##print '================================================================'
 ##dashboard = api.get_dashboard()
