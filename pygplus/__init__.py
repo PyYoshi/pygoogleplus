@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
-__AUTHOR__ = 'RenaX'
-__LICENCE__ = ''
-__VERSION__ = ''
+__AUTHOR__ = 'PyYoshi'
+__LICENCE__ = 'MIT'
+__VERSION__ = '1.0.0' # X.Y.Z: X is major version. Y is minor version. Z is revision.
+__HISTORY__ = [
+    u'1.0.0: メジャーアップデート',
+]
 
 from pygplus.api_binder import ApiBinder
 from pygplus.api_handler import ApiHandler
