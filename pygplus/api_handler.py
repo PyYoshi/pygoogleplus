@@ -12,7 +12,22 @@ from pygplus.builder import Builder
 # TODO: atがなくてもうごくっぽい。 要調査
 
 class ApiHandler(object):
+    """ 叩けるAPIの関数群 """
     def __init__(self,auth_handler,self_info=None,user_id=None,at=None,retry_times=0,retry_delay=0):
+        """
+        APIHandlerのコンストラクタ
+        Args:
+            auth_handler: AuthHandler, Google+にログインする際に必要な引数。
+            self_info: UserInfo(Model), 各APIを扱う際に必要な情報をまとめて入れることができます。 ApiHandler.get_user_info()の返り値を代入してください。 それ以外ではエラーを吐きます。
+            user_id: str, ApiHandler.get_user_info()を実行するコストが気に入らない場合は、ここに自分のuser_idを代入してください。 またuser_idを入れた場合、at引数にも代入してください。
+            at: str, ApiHandler.get_user_info()を実行するコストが気に入らない場合は、ここに自分のatを代入してください。 またatを入れた場合、user_id引数にも代入してください。
+            retry_times: int, APIの実行に失敗した際に試行する回数。
+            retry_delay: int, APIの実行に失敗した際に試行する際のラグ。
+        Returns:
+            none
+        Exceptions:
+            none
+        """
         self.auth = auth_handler
         self.retry_times = retry_times
         self.retry_delay = retry_delay
@@ -27,6 +42,7 @@ class ApiHandler(object):
 
     def template(self):
         """
+        テンプレ。
         Description...
         Args:
             none
@@ -46,11 +62,14 @@ class ApiHandler(object):
 
     def get_user_info(self,user_id=None,next_id=None,next_obj=None,forced=False):
         """
-        Description...
+        ユーザ情報を取得します。user_idを指定しない場合は自分の情報を取得します。
         Args:
-            none
+            user_id: str, 得たいユーザのidを代入してください。
+            next_id: str,, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
+            next_obj: obj, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
+            forced: bool, 強制的に取得する際はTrueにしてください。 デフォルトでは１度取得したものが返り値となります。
         Returns:
-            none
+            UserInfo(Model)
         Exceptions:
             none
         """
@@ -68,6 +87,8 @@ class ApiHandler(object):
         method_post = False
         model = "userinfo"
         if next_id:
+            if not next_obj:
+                raise PyGplusErrors('next_objがありません。')
             result = self.__get_nextdata(next_id=next_id,next_obj=next_obj)
         else:
             binder = ApiBinder(api=self,
@@ -82,13 +103,14 @@ class ApiHandler(object):
 
     def __get_nextdata(self,next_id,next_obj):
         """
-        Description...
+        次のデータを取得する際に必要となる関数
         Args:
-            none
+            next_id: str,, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
+            next_obj: obj, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
         Returns:
-            none
+            NextPostsData(Model)
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'nextpostsdata'
         api_method_path = "/_/stream/getactivities/?"
@@ -118,11 +140,11 @@ class ApiHandler(object):
 
     def get_post_info(self,item_id):
         """
-        Description...
+        指定されたidから投稿の情報を取得します
         Args:
-            none
+            item_id: Posts(Model)の各投稿に格納されているitem_id。
         Returns:
-            none
+            PostInfo(Model)
         Exceptions:
             none
         """
@@ -135,7 +157,7 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = False
-        model = "jsonraw"
+        model = "postinfo"
         binder = ApiBinder(api=self,
             api_method_path=api_method_path,
             required_auth=required_auth,
@@ -146,15 +168,14 @@ class ApiHandler(object):
 
     def get_notification(self,max_results=50):
         """
-        Description...
+        通知情報の取得。詳細情報はApiHandler.get_post_info()を実行してください。
         Args:
-            none
+            max_results: int, 取得する通知の最大数。 50超は非推奨
         Retruns:
-            none
+            Notifications(Model)
         Exceptions:
             none
         """
-        # https://plus.google.com/u/0/_/notifications/getnotificationsdata?maxResults=15&hl=ja&_reqid=65366&rt=j
         api_method_path = "/_/notifications/getnotificationsdata?"
         params = {
             #'inWidget':'true',
@@ -166,7 +187,7 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = False
-        model = "jsonraw"
+        model = "notifications"
         binder = ApiBinder(api=self,
             api_method_path=api_method_path,
             required_auth=required_auth,
@@ -175,13 +196,13 @@ class ApiHandler(object):
         result = binder.execute(model)
         return result
 
-    def get_followers(self,page_id=None,forced=False):
+    def get_followers(self,forced=False):
         """
-        Description...
+        フォロワー情報の取得
         Args:
-            none
+            forced: bool, 強制更新するか否か
         Returns:
-            none
+            Followers(Model)
         Exceptions:
             none
         """
@@ -206,13 +227,13 @@ class ApiHandler(object):
         self.followers = result.users
         return result
 
-    def get_circles(self,page_id=None,forced = False):
+    def get_circles(self,forced=False):
         """
-        Description...
+        サークル情報・フォローしているユーザ情報の取得
         Args:
-            none
+            forced: bool, 強制更新するか否か
         Returns:
-            none
+            Circles(Model)
         Exceptions:
             none
         """
@@ -242,13 +263,14 @@ class ApiHandler(object):
 
     def get_dashboard(self,next_id=None,next_obj=None):
         """
-        Description...
+        ダッシュボード(ストリーム)から投稿情報を取得
         Args:
-            none
+            next_id: str,, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
+            next_obj: obj, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
         Returns:
-            none
+            Dashboard(Model)
         Exceptions:
-            none
+            PyGplusErrors
         """
         api_method_path = "/"
         required_auth = True
@@ -258,6 +280,8 @@ class ApiHandler(object):
         if not self.self_info:
             raise PyGplusErrors(u'apt.get_user_info()が実行されていません。')
         if next_id:
+            if not next_obj:
+                raise PyGplusErrors('next_objがありません。')
             result = self.__get_nextdata(next_id=next_id,next_obj=next_obj)
         else:
             binder = ApiBinder(api=self,
@@ -270,36 +294,17 @@ class ApiHandler(object):
 
     def media_photo(self,filenames=[]):
         """
-        Description...
-        
+        投稿に画像を含める際に使用する関数
         Args:
-            none
+            filenames: list, アップロードしたいfileパスをリスト形式で代入してください。
         Returns:
             {
                 'type':'photos',
-                'result' : [{
-                    '_api': <pygplus.api_handler.ApiHandler>,
-                    'photo': {
-                        'username': str,
-                        'description': str,
-                        'album_id': str,
-                        'timestamp': datetime.datetime(),
-                        'photo_page_url': str,
-                        'height': int
-                        'photo_url': str,
-                        'mimetype': str,
-                        'kind': str,
-                        'photo_id': str,
-                        'album_page_url': str,
-                        'filename': str,
-                        'width': int,
-                        'auto_downsize': bool,
-                        'size': int
-                    }]
-                }
+                'result':results
             }
+            results: list, UploadPhoto(Model)で構成されたリスト。
         Exceptions:
-            none
+            PyGplusErrors
         """
         api_method_path = "/_/upload/photos/resumable?"
         required_auth = True
@@ -349,13 +354,13 @@ class ApiHandler(object):
 
     def media_link(self,url):
         """
-        Description...
+        投稿にリンクを含める際に使用する関数
         Args:
-            none
+            url: str, リンク
         Returns:
-            none
+            UploadLink(Model)
         Exceptions:
-            none
+            PyGplusErrors
         """
         api_method_path = "/_/sharebox/linkpreview/?"
         required_auth = True
@@ -388,13 +393,14 @@ class ApiHandler(object):
 
     def media_video(self,url):
         """
-        Description...
+        投稿にYoutubeリンクを含める際に使用する関数
+        動画自体のアップロードは対応予定なし
         Args:
-            none
+            url: str, youtubeのリンク
         Returns:
-            none
+            UploadVideoLink
         Exceptions:
-            none
+            PyGplusErrors
         """
         api_method_path = "/_/sharebox/linkpreview/?"
         required_auth = True
@@ -425,20 +431,24 @@ class ApiHandler(object):
         result = binder.execute(model)
         return result
 
-    def update_post(self,message,scope_type,circle_ids=[],media=None,page_id=None,share=False,comment=False):
+    def update_post(self,message,scope_type,circle_ids=[],media=None,share=False,comment=False):
         """
-        Description...
+        投稿するための関数
         Args:
-            none
+            message: str, 投稿本文
+            scope_type: Builder.ANYONE: 一般公開
+                        Builder.EXTENDED: 友だちの友だちサークル公開
+                        Builder.CIRCLES: あなたのサークル
+                        Builder.LIMITED: サークル指定。 これを指定した場合、circle_idsは必須です。
+            media: obj, ApiHandler.media_photo ApiHandler.media_link ApiHandler.media_videoのいずれかの返り値を代入してください。
+            share: bool, Trueの場合、投稿ロック(共有無効)にします。
+            comment: bool, Trueの場合、コメントを無効にします。
         Returns:
-            none
+            UpdatePost(Model)
         Exceptions:
-            none
+            PyGplusErrors
         """
-        if page_id != None:
-            api_method_path = "/b/"+page_id+'/_/sharebox/post/?'
-        else:
-            api_method_path = "/_/sharebox/post/?"
+        api_method_path = "/_/sharebox/post/?"
         params = {
             "_reqid":Utils.gen_reqid(6),
             "rt":"j",
@@ -480,13 +490,14 @@ class ApiHandler(object):
 
     def update_comment(self,message,item_id):
         """
-        Description...
+        投稿にコメントする関数
         Args:
-            none
+            message: str, コメント本文
+            item_id: str, コメントしたい投稿のitem_id
         Returns:
-            none
+            UpdateComment(Model)
         Exceptions:
-            none
+            PyGplusErrors
         """
         api_method_path = "/_/stream/comment/?"
         params = {
@@ -520,14 +531,14 @@ class ApiHandler(object):
 
     def update_plusone(self,item_id):
         """
-        Description...
+        投稿に+1する関数
         投稿の場合はitem_id、コメントの場合はcomment_idでできる。
         Args:
-            none
+            item_id: str, +1したい投稿のitem_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/plusone?"
@@ -557,14 +568,14 @@ class ApiHandler(object):
 
     def update_unplusone(self,item_id):
         """
-        Description...
+        +1された投稿を取り消す関数
         投稿の場合はitem_id、コメントの場合はcomment_idでできる。
         Args:
-            none
+            item_id: str, 取り消したい投稿のitem_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/plusone?"
@@ -594,13 +605,13 @@ class ApiHandler(object):
 
     def delete_post(self,item_id):
         """
-        Description...
+        投稿を削除する関数
         Args:
-            none
+            item_id: str, 削除したい投稿のitem_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/stream/deleteactivity/?"
@@ -629,13 +640,14 @@ class ApiHandler(object):
 
     def delete_comment(self,comment_id):
         """
-        Description...
+        コメントを削除する
+        自分の投稿へのコメントの場合、自分のコメントでも削除できてしまうので注意が必要
         Args:
-            none
+            comment_id: str, 削除したい投稿のcomment_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/stream/deletecomment/?"
@@ -664,13 +676,13 @@ class ApiHandler(object):
 
     def update_disable_comment(self,item_id):
         """
-        Description...
+        投稿へのコメントを無効にする関数
         Args:
-            none
+            item_id, str, 無効にしたい投稿のitem_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/stream/disablecomments/?"
@@ -701,13 +713,13 @@ class ApiHandler(object):
 
     def update_enable_comment(self,item_id):
         """
-        Description...
+        投稿へのコメントを有効にする関数
         Args:
-            none
+            item_id: str, コメントを有効にしたい投稿のitem_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/stream/disablecomments/?"
@@ -737,13 +749,13 @@ class ApiHandler(object):
 
     def update_lock_post(self,item_id):
         """
-        Description...
+        投稿をロックし共有を無効化する関数
         Args:
-            none
+            item_id: str, ロックしたい投稿のitem_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/stream/disableshare/?"
@@ -773,13 +785,13 @@ class ApiHandler(object):
 
     def update_unlock_post(self,item_id):
         """
-        Description...
+        共有無効化をアン・ロックする関数
         Args:
-            none
+            item_id: str, ロック解除したい投稿のitem_id
         Returns:
-            none
+            JsonRaw(Model): 特に必要とする情報が含まれていないため、そのまま値を返す。
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'jsonraw'
         api_method_path = "/_/stream/disableshare/?"
@@ -809,14 +821,13 @@ class ApiHandler(object):
 
     def lookup_hovercards(self,user_id):
         """
-        Description...
-
+        ユーザの簡易情報取得関数
         Args:
-            none
+            user_id: str, 簡易情報を得たいユーザのuser_id
         Returns:
-            none
+            HoverCards(Model)
         Exceptions:
-            none
+            PyGplusErrors
         """
         model = 'hovercards'
         api_method_path = "/_/socialgraph/lookup/hovercards/?"
@@ -846,19 +857,7 @@ class ApiHandler(object):
         result = binder.execute(model)
         return result
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ################################ 未実装API ################################
 
     def update_post_share(self,message,item_id):
         """
