@@ -177,7 +177,6 @@ class PostInfo(Model):
         api = method.api
         postinfo = cls(api)
         data = Utils.fix_json_string(data)
-        print data
         json = json_lib.loads(data)
         setattr(postinfo,'posts',Posts.parse(method,[json[0][1][1]]))
         return postinfo
@@ -447,7 +446,6 @@ class JsonRaw(Model):
     @classmethod
     def parse(cls,method,data):
         data = Utils.fix_json_string(data)
-        print data
         return json_lib.loads(data)
 
 class Raw(Model):
