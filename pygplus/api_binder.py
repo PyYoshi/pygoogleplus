@@ -12,7 +12,7 @@ class ApiBinder(object):
     """ 通信関係の処理 """
     def __init__(self,**config):
         """
-        description
+
         Args:
             none
         Returns:
