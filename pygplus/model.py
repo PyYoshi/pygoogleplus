@@ -321,7 +321,6 @@ class Notifications(Model):
         my_user_id = json[0][0][1]
         for notification_json in json[0][1][1][0]:
             ntfc = cls(api)
-            notification = {}
             if notification_json[10] == 'g:'+my_user_id and notification_json[17] == '0g:'+my_user_id:
                 users = []
                 for user_json in notification_json[2][0][1]:
