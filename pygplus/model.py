@@ -160,6 +160,17 @@ class UserInfo(Model):
                 setattr(userinfo,'at',json[15])
         return userinfo
 
+class PostInfo(Model):
+    @classmethod
+    def parse(cls,method,data):
+        api = method.api
+        postinfo = cls(api)
+        data = Utils.fix_json_string(data)
+        json = json_lib.loads(data)
+        setattr(postinfo,'posts',Posts.parse(method,[json[0][1][1]]))
+        return postinfo
+
+
 class Followers(Model):
     @classmethod
     def parse(cls,method,data):
@@ -372,6 +383,7 @@ class Raw(Model):
 
 class ModelFactory(object):
     userinfo = UserInfo
+    postinfo = PostInfo
     followers = Followers
     circles = Circles
     uploadphoto = UploadPhoto
