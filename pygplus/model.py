@@ -121,15 +121,26 @@ class Posts(Model):
                 else:
                     media[media_type] = post_json[11]
                 setattr(pst,'media',media)
-            share = {}
-            if post_json[43] != None and post_json[43] != []:
-                share = {
-                    'screen_name': post_json[43][0],
-                    'user_id': post_json[43][1],
-                    'user_icon_url': 'https:'+ post_json[43][4],
-                    'body': post_json[47]
-                }
-            setattr(pst,'share',share)
+            shares = []
+            if post_json[25] != None and post_json[25] != []:
+                for share_json in post_json[25]:
+                    share = {
+                        'screen_name': share_json[0],
+                        'user_id': share_json[1],
+                    }
+                    shares.append(share)
+            setattr(pst,'shares',shares)
+            plusones = []
+            if post_json[73] != None and post_json[73] != []:
+                if post_json[73][17] != None and post_json[73][17] != []:
+                    for plusone_json in post_json[73][17]:
+                        plusone = {
+                            'screen_name': plusone_json[0],
+                            'user_id': plusone_json[1],
+                            'user_icon_url': plusone_json[3],
+                            }
+                        plusones.append(plusone)
+            setattr(pst,'plusones',plusones)
             results.append(pst)
         return results
 
@@ -166,6 +177,7 @@ class PostInfo(Model):
         api = method.api
         postinfo = cls(api)
         data = Utils.fix_json_string(data)
+        print data
         json = json_lib.loads(data)
         setattr(postinfo,'posts',Posts.parse(method,[json[0][1][1]]))
         return postinfo
@@ -295,10 +307,73 @@ class UploadVideoLink(Model):
             result['result'] = json[0][3][0]
         return result
 
-class Notification(Model):
+class Notifications(Model):
+    AddBack = 'AddBack' # フォロー返し
+    Add = 'Add' # フォロー
+    Reply = 'Reply' # コメント・共有・+1された
     @classmethod
     def parse(cls,method,data):
-        pass
+        api = method.api
+        ntfcs = cls(api)
+        data = Utils.fix_json_string(data)
+        json = json_lib.loads(data)
+        notifications = []
+        my_user_id = json[0][0][1]
+        for notification_json in json[0][1][1][0]:
+            ntfc = cls(api)
+            notification = {}
+            if notification_json[10] == 'g:'+my_user_id and notification_json[17] == '0g:'+my_user_id:
+                users = []
+                for user_json in notification_json[2][0][1]:
+                    #user_gender = user_json[2][4]
+                    user = {
+                        'user_id':user_json[6],
+                        'screen_name':user_json[2][0],
+                        'user_icon_url':user_json[2][2],
+                        }
+                    users.append(user)
+                setattr(ntfc,'users',users)
+                setattr(ntfc,'flag',Notifications.Add)
+            elif notification_json[10] == 'g:'+my_user_id+':add-back' and notification_json[17] == '0g:'+my_user_id+':add-back':
+                users = []
+                for user_json in notification_json[2][0][1]:
+                    #user_gender = user_json[2][4]
+                    user = {
+                        'user_id':user_json[6],
+                        'screen_name':user_json[2][0],
+                        'user_icon_url':user_json[2][2],
+                        }
+                    users.append(user)
+                setattr(ntfc,'users',users)
+                setattr(ntfc,'flag',Notifications.Add)
+            else:
+                # TODO: Comment, Share, +1 の細分化。
+                # 下記から通知を送ったユーザは取得できるが、コメントの場合はコメント本文は取得できない。
+                #[2][0]: Comment
+                #[2][1]: +1
+                #[2][2]: Share
+                setattr(ntfc,'posts',None)
+                if notification_json[18] != None and notification_json[18] != []:
+                    if notification_json[18][0] != None and notification_json[18][0] != []:
+                        if notification_json[18][0][0] != None and notification_json[18][0][0] != []:
+                            posts = Posts.parse(method,[notification_json[18][0][0]])
+                            setattr(ntfc,'posts',Posts)
+                setattr(ntfc,'flag',Notifications.Reply)
+            notification_user_ids = []
+            for user_id in notification_json[19]:
+                notification_user_ids.append(user_id)
+            setattr(ntfc,'notification_user_ids',notification_user_ids)
+            notifications.append(ntfc)
+        setattr(ntfcs,'notifications',notifications)
+        users_details = []
+        for users_details_json in json[0][1][1][8]:
+            user = cls(api)
+            setattr(user,'screen_name',users_details_json[0])
+            setattr(user,'user_icon_url',users_details_json[2])
+            setattr(user,'user_id',users_details_json[3])
+            users_details.append(user)
+        setattr(ntfcs,'users_details',users_details)
+        return ntfcs
 
 class Dashboard(Model):
     @classmethod
@@ -384,8 +459,10 @@ class Raw(Model):
 class ModelFactory(object):
     userinfo = UserInfo
     postinfo = PostInfo
+    notifications = Notifications
     followers = Followers
     circles = Circles
+    notifications = Notifications
     uploadphoto = UploadPhoto
     uploadlink = UploadLink
     uploadvideolink = UploadVideoLink
