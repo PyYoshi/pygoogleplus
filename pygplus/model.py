@@ -164,6 +164,8 @@ class UserInfo(Model):
                 setattr(userinfo,'introduction',json[2][14][1])
                 setattr(userinfo,'tagline',json[2][33][1])
                 posts = Posts.parse(method,json[4][0])
+                setattr(userinfo,'next_id',json[4][1])
+                setattr(userinfo,'next_obj',json[4][2])
                 setattr(userinfo,'posts',posts)
             elif script['key'] == '36':
                 setattr(userinfo,'country_code',json[0])
@@ -459,7 +461,6 @@ class ModelFactory(object):
     notifications = Notifications
     followers = Followers
     circles = Circles
-    notifications = Notifications
     uploadphoto = UploadPhoto
     uploadlink = UploadLink
     uploadvideolink = UploadVideoLink
