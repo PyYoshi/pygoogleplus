@@ -4,6 +4,7 @@ __LICENCE__ = 'MIT'
 __VERSION__ = '1.0.0' # X.Y.Z: X is major version. Y is minor version. Z is revision.
 __HISTORY__ = [
     u'1.0.0: メジャーアップデート',
+    u'1.0.1: UserInfoの修正',
 ]
 
 from pygplus.api_binder import ApiBinder
