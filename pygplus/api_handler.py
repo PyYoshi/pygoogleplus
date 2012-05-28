@@ -261,11 +261,13 @@ class ApiHandler(object):
         self.own_circles = result.circles_list
         return result
 
-    def get_dashboard(self,next_id=None,next_obj=None):
+    def get_dashboard(self,circle_id=None,next_id=None,next_obj=None):
         """
         ダッシュボード(ストリーム)から投稿情報を取得
+        # TODO: わかりにくい関数名かもしれない。
         Args:
-            next_id: str,, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
+            circle_id: str, 取得したいcircle_id。ない場合はホームから取得する。
+            next_id: str, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
             next_obj: obj, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
         Returns:
             Dashboard(Model)
@@ -277,11 +279,11 @@ class ApiHandler(object):
         method_post = False
         model = "dashboard"
 
-        if not self.self_info:
-            raise PyGplusErrors(u'apt.get_user_info()が実行されていません。')
         if next_id:
             if not next_obj:
                 raise PyGplusErrors('next_objがありません。')
+            if circle_id:
+                next_obj[3] = circle_id
             result = self.__get_nextdata(next_id=next_id,next_obj=next_obj)
         else:
             binder = ApiBinder(api=self,
