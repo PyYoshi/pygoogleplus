@@ -13,7 +13,7 @@ setup(name="PyGooglePlus",
     packages = find_packages(),
     keywords= "",
     zip_safe = True,
-    install_require=[
+    install_requires=[
         'beautifulsoup',
         'simplejson'
     ]
