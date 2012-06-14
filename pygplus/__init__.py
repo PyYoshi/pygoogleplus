@@ -1,16 +1,13 @@
 # -*- coding:utf-8 -*-
-__AUTHOR__ = 'PyYoshi'
-__LICENCE__ = 'MIT'
-__VERSION__ = '1.0.0' # X.Y.Z: X is major version. Y is minor version. Z is revision.
-__HISTORY__ = [
-    u'1.0.0: メジャーアップデート',
-]
+__author__ = 'PyYoshi'
+__license__ = 'MIT'
+__version__ = '1.0.1' # X.Y.Z: X is major version. Y is minor version. Z is revision.
+__url__ = 'https://github.com/PyYoshi/pygoogleplus'
+# Histroy
+# 1.0.0: メジャーアップデート
+# 1.0.1: ApiHandler.self_infoが無い場合、強制的に取得するように変更
+#        細かな修正
 
-from pygplus.api_binder import ApiBinder
 from pygplus.api_handler import ApiHandler
 from pygplus.auth_handler import AuthHandler
-from pygplus.builder import Builder
 from pygplus.errors import PyGplusErrors
-from pygplus.model import ModelFactory
-from pygplus.parser import ModelParser
-from pygplus.utils import Utils
