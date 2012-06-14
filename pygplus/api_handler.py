@@ -33,32 +33,22 @@ class ApiHandler(object):
         self.retry_delay = retry_delay
         self.host = "plus.google.com"
         self.ssl = True
-        self.self_info = self_info
-        self.user_id = user_id
-        self.at = at
+
+        if not self_info:
+            self.self_info = self.get_user_info(forced=True)
+        else:
+            self.self_info = self_info
+
+        if user_id and not at:
+            raise PyGplusErrors(u'user_idを代入した場合、atも代入してください。')
+        elif not user_id and at:
+            raise PyGplusErrors(u'atを代入した場合、user_idも代入してください。')
+        else:
+            self.user_id = user_id
+            self.at = at
         self.followers = None
         self.followings = None
         self.own_circles = None
-
-    def template(self):
-        """
-        テンプレ。
-        Description...
-        Args:
-            none
-        Returns:
-            none
-        Exceptions:
-            none
-        """
-        raise NotImplementedError()
-        api_method_path = "/"
-        required_auth = True
-        method_post = False
-        model = ""
-        binder = ApiBinder(self)
-        binder.execute(model)
-        return
 
     def get_user_info(self,user_id=None,next_id=None,next_obj=None,forced=False):
         """
