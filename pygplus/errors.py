@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 
+__all__ = ['PyGplusErrors']
+
 class PyGplusErrors(Exception):
     """ description """
 

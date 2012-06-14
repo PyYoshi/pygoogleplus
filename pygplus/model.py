@@ -3,6 +3,8 @@
 from pygplus.utils import Utils
 from pygplus.errors import PyGplusErrors
 
+__all__ = ['ModelFactory']
+
 json_lib = Utils.import_simplejson()
 
 class Model(object):

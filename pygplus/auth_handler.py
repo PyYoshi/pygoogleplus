@@ -3,9 +3,12 @@
 import urllib
 import urllib2
 import cookielib
+
 from BeautifulSoup import BeautifulSoup
 
 from pygplus.errors import PyGplusErrors
+
+__all__ = ['AuthHandler']
 
 class AuthHandler(object):
     def __init__(self,email=None,passwd=None,cookie=None):
@@ -73,3 +76,4 @@ class AuthHandler(object):
 
     def save_cookie(self,filename):
         self.cookie.save(filename=filename)
+

@@ -8,6 +8,8 @@ from pygplus.api_binder import ApiBinder
 from pygplus.utils import Utils
 from pygplus.builder import Builder
 
+__all__ = ['ApiHandler']
+
 # TODO: 各API関数のdocstringを書く
 # TODO: atがなくてもうごくっぽい。 要調査
 
@@ -40,9 +42,9 @@ class ApiHandler(object):
             self.self_info = self_info
 
         if user_id and not at:
-            raise PyGplusErrors(u'user_idを代入した場合、atも代入してください。')
+            raise PyGplusErrors('user_idを代入した場合、atも代入してください。')
         elif not user_id and at:
-            raise PyGplusErrors(u'atを代入した場合、user_idも代入してください。')
+            raise PyGplusErrors('atを代入した場合、user_idも代入してください。')
         else:
             self.user_id = user_id
             self.at = at
@@ -55,7 +57,7 @@ class ApiHandler(object):
         ユーザ情報を取得します。user_idを指定しない場合は自分の情報を取得します。
         Args:
             user_id: str, 得たいユーザのidを代入してください。
-            next_id: str,, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
+            next_id: str, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
             next_obj: obj, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
             forced: bool, 強制的に取得する際はTrueにしてください。 デフォルトでは１度取得したものが返り値となります。
         Returns:

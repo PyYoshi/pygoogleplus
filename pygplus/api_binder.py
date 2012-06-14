@@ -8,6 +8,8 @@ from pygplus.errors import PyGplusErrors
 from pygplus.utils import Utils
 from pygplus.parser import ModelParser
 
+__all__ = ['ApiBinder']
+
 class ApiBinder(object):
     """ 通信関係の処理 """
     def __init__(self,**config):

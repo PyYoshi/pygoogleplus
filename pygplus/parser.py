@@ -3,6 +3,8 @@
 from pygplus.errors import PyGplusErrors
 from pygplus.model import ModelFactory
 
+__all__ = ['ModelParser']
+
 class ModelParser(object):
     """ description """
 
@@ -10,27 +12,9 @@ class ModelParser(object):
         self.model_factory = ModelFactory
 
     def parse_error(self):
-        """
-        description
-        Args:
-            none
-        Returns:
-            none
-        Exceptions:
-            none
-        """
         pass
 
     def parser(self,method,model_type,data):
-        """
-        description
-        Args:
-            none
-        Returns:
-            none
-        Exceptions:
-            none
-        """
         model = getattr(self.model_factory,model_type)
         result = model.parse(method, data)
         return result
