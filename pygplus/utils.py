@@ -1,12 +1,18 @@
 # -*- coding:utf-8 -*-
 
+# TODO: すべてxpathに置き換えて、lxmlがimport可能であればそれを使い、ダメな場合BeautifulSoupを使うようにする。 これである程度高速化を図れる。
+# TODO: BeautifulSoup4への移行
+
 import random
 import re
-from BeautifulSoup import BeautifulSoup
 from datetime import datetime
 import time
 
 from pygplus.errors import PyGplusErrors
+
+from BeautifulSoup import BeautifulSoup
+
+__all__ = ['Utils']
 
 preFixJsonHead = re.compile(r'^\)\]\}\'(.*)')
 preFixJsonBracket = re.compile(r'\[\,')
@@ -118,7 +124,3 @@ class Utils(object):
         for s in div.text.splitlines():
             line += s
         return Utils.fix_json_string(line.replace('&quot;','"'))
-
-    @staticmethod
-    def parse_post_body(str):
-        pass
