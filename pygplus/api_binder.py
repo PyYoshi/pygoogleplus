@@ -13,17 +13,6 @@ __all__ = ['ApiBinder']
 class ApiBinder(object):
     """ 通信関係の処理 """
     def __init__(self,**config):
-        """
-
-        Args:
-            none
-        Returns:
-            none
-        Exceptions:
-            none
-        """
-
-        # 初期値
         self.headers = [
             ('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.34 Safari/536.11'),
             ("Accept-encoding", "gzip"), # 高速化
@@ -42,15 +31,7 @@ class ApiBinder(object):
             )
 
     def execute(self,model):
-        """
-        description
-        Args:
-            none
-        Returns:
-            none
-        Exceptions:
-            none
-        """
+        # TODO: 403のとき、cookieが不正な時がある。
         # TODO: 例外処理を追加 # raise PyGplusErrors('HttpCommunicationError: mes',res)
         url = Utils.build_path(self.api.host,self.api_method_path,self.api.ssl)
         if self.required_auth:
