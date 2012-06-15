@@ -18,13 +18,14 @@ import cookielib
 cookie = cookielib.LWPCookieJar()
 cookie.load(settings.CJAR_PATH)
 auth = AuthHandler(cookie=cookie)
-#print auth.cookie._cookies[".google.com"]["/"]["APISID"].value
 api = ApiHandler(auth_handler=auth)
 
-print api.get_user_info().__dict__
-##prof = api.get_user_info()
+##print api.at
+
+##print api.get_user_info().__dict__
+#prof = api.get_user_info()
+#print prof.__dict__
 ##print prof.__dict__
-##print prof.posts[5].__dict__
 ##print prof.posts[5].comments[0].__dict__
 ##next_id = prof.next_id
 ##next_obj = prof.next_obj
