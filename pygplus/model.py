@@ -146,6 +146,37 @@ class Posts(Model):
             results.append(pst)
         return results
 
+class Pages(Model):
+    @classmethod
+    def parse(cls,method,data):
+        pages = cls.parse_list(method,data)
+        return pages
+
+    @classmethod
+    def parse_list(cls,method,data):
+        api = method.api
+        results = []
+        for page in data[1:]: # [0]は自分の情報
+            p = cls(api)
+            setattr(p,'page_id',page[30])
+            setattr(p,'page_icon_url',page[3])
+            setattr(p,'page_screen_name',page[4][1])
+            setattr(p,'introduction',page[14][1])
+            setattr(p,'tagline',page[33][1])
+            setattr(p,'website',page[60][1])
+            results.append(p)
+        return results
+
+class SelfInfo(Model):
+    @classmethod
+    def parse(cls,method,data):
+        api = method.api
+        selfinfo = cls(api)
+        json = json_lib.loads(Utils.fix_json_string(data))
+        setattr(selfinfo,'user_id',json[0][0][1])
+        setattr(selfinfo,'pages',Pages.parse(method,json[0][1][1]))
+        return selfinfo
+
 class UserInfo(Model):
     @classmethod
     def parse(cls,method,data):
@@ -458,6 +489,7 @@ class Raw(Model):
         return data
 
 class ModelFactory(object):
+    selfinfo = SelfInfo
     userinfo = UserInfo
     postinfo = PostInfo
     notifications = Notifications

@@ -15,14 +15,12 @@ __all__ = ['ApiHandler']
 
 class ApiHandler(object):
     """ 叩けるAPIの関数群 """
-    def __init__(self,auth_handler,self_info=None,user_id=None,at=None,retry_times=0,retry_delay=0):
+    def __init__(self,auth_handler,at=None,retry_times=0,retry_delay=0):
         """
         APIHandlerのコンストラクタ
         Args:
             auth_handler: AuthHandler, Google+にログインする際に必要な引数。
-            self_info: UserInfo(Model), 各APIを扱う際に必要な情報をまとめて入れることができます。 ApiHandler.get_user_info()の返り値を代入してください。 それ以外ではエラーを吐きます。
-            user_id: str, ApiHandler.get_user_info()を実行するコストが気に入らない場合は、ここに自分のuser_idを代入してください。 またuser_idを入れた場合、at引数にも代入してください。
-            at: str, ApiHandler.get_user_info()を実行するコストが気に入らない場合は、ここに自分のatを代入してください。 またatを入れた場合、user_id引数にも代入してください。
+            at: str, ApiHandler.get_user_info()を実行するコストが気に入らない場合は、ここに自分のatを代入してください。
             retry_times: int, APIの実行に失敗した際に試行する回数。
             retry_delay: int, APIの実行に失敗した際に試行する際のラグ。
         Returns:
@@ -36,25 +34,48 @@ class ApiHandler(object):
         self.host = "plus.google.com"
         self.ssl = True
 
-        if not self_info:
-            self.self_info = self.get_user_info(forced=True)
-        else:
-            self.self_info = self_info
-
-        if user_id and not at:
-            raise PyGplusErrors('user_idを代入した場合、atも代入してください。')
-        elif not user_id and at:
-            raise PyGplusErrors('atを代入した場合、user_idも代入してください。')
-        else:
-            self.user_id = user_id
+        self.self_info = self.__get_self_info()
+        self.user_id = self.self_info.user_id
+        self.pages = self.self_info.pages
+        if at:
             self.at = at
+        else:
+            self.at = self.get_user_info(user_id=self.user_id).at
         self.followers = None
         self.followings = None
         self.own_circles = None
 
-    def get_user_info(self,user_id=None,next_id=None,next_obj=None,forced=False):
+    def __get_self_info(self):
         """
-        ユーザ情報を取得します。user_idを指定しない場合は自分の情報を取得します。
+        自分の情報を取得します。
+        Args:
+            none
+        Returns:
+            SelfInfo(Model)
+        Exceptions:
+            none
+        """
+        api_method_path = "/_/pages/getidentities/?"
+        params = {
+            '_reqid': Utils.gen_reqid(6),
+            'rt':'j',
+        }
+        api_method_path += urllib.urlencode(params)
+        required_auth = True
+        method_post = False
+        model = "selfinfo"
+        binder = ApiBinder(api=self,
+            api_method_path=api_method_path,
+            required_auth=required_auth,
+            method_post=method_post
+        )
+        result = binder.execute(model)
+
+        return result
+
+    def get_user_info(self,user_id,next_id=None,next_obj=None):
+        """
+        ユーザ情報を取得します。
         Args:
             user_id: str, 得たいユーザのidを代入してください。
             next_id: str, １度目には取得しきれなかった投稿を取得する際に必要となる値です。この関数の２回目以降の実行時にのみ使用できます。 返り値に格納されています。
@@ -66,15 +87,7 @@ class ApiHandler(object):
             none
         """
         # https://plus.google.com/u/0/_/pages/getidentities/?hl=ja&_reqid=167621&rt=j # 自分の場合はこれでいい
-        if next_id and next_obj:
-            forced = True
-        if user_id == None:
-            if self.self_info != None and forced == False:
-                return self.self_info
-            else:
-                api_method_path = "/me/about"
-        else:
-            api_method_path = "/%s/about" % str(user_id)
+        api_method_path = "/%s/about" % str(user_id)
         required_auth = True
         method_post = False
         model = "userinfo"
@@ -89,7 +102,6 @@ class ApiHandler(object):
                                method_post=method_post
             )
             result = binder.execute(model)
-            self.self_info = result
 
         return result
 
@@ -111,8 +123,8 @@ class ApiHandler(object):
             'rt':'j'
         }
         api_method_path += urllib.urlencode(params)
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         f_req = Builder.build_nextdata_json(next_id=next_id,next_obj=next_obj)
@@ -368,8 +380,8 @@ class ApiHandler(object):
         }
         api_method_path += urllib.urlencode(params)
         model = 'uploadlink'
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -408,8 +420,8 @@ class ApiHandler(object):
         }
         api_method_path += urllib.urlencode(params)
         model = 'uploadvideolink'
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -452,8 +464,8 @@ class ApiHandler(object):
         required_auth = True
         method_post = True
         model = 'updatepost'
-        if self.self_info or self.user_id:
-            user_id = self.self_info.user_id or self.user_id
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('user_idがありません。get_user_info()を実行するかAPIHandlerにuser_idを引数に入れてください。')
         scope_data = Builder.build_scope_data(self,scope_type,user_id,circle_ids)
@@ -466,10 +478,6 @@ class ApiHandler(object):
             spar = Builder.build_post_json(message=message,user_id=user_id,scope_data=scope_data,album_id=album_id,media_json=media_json,share=share,comment=comment)
         else:
             spar = Builder.build_post_json(message=message,user_id=user_id,scope_data=scope_data,share=share,comment=comment)
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
-        else:
-            raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
             'spar':spar,
             'at':at
@@ -501,8 +509,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         timestamp = Utils.get_jsdate_now()
@@ -543,8 +551,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -580,8 +588,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -616,8 +624,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -652,8 +660,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -688,8 +696,8 @@ class ApiHandler(object):
         required_auth = True
         method_post = True
 
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -724,8 +732,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -760,8 +768,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -796,8 +804,8 @@ class ApiHandler(object):
         api_method_path += urllib.urlencode(params)
         required_auth = True
         method_post = True
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
@@ -836,8 +844,8 @@ class ApiHandler(object):
         required_auth = True
         method_post = True
 
-        if self.self_info or self.at:
-            at = self.self_info.at or self.at
+        if self.at:
+            at = self.at
         else:
             raise PyGplusErrors('atがありません。get_user_info()を実行するかAPIHandlerにatを引数に入れてください。')
         post_body = urllib.urlencode({
