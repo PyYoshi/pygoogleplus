@@ -25,7 +25,7 @@ class ApiBinder(object):
 
         # 初期値
         self.headers = [
-            ('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.46 Safari/536.5'),
+            ('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.34 Safari/536.11'),
             ("Accept-encoding", "gzip"), # 高速化
         ]
 
