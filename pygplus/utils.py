@@ -124,7 +124,3 @@ class Utils(object):
         for s in div.text.splitlines():
             line += s
         return Utils.fix_json_string(line.replace('&quot;','"'))
-
-    @staticmethod
-    def parse_post_body(str):
-        pass
