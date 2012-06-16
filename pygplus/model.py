@@ -167,6 +167,15 @@ class Pages(Model):
             results.append(p)
         return results
 
+class InitData1(Model):
+    @classmethod
+    def parse(cls,method,data):
+        api=method.api
+        initdata = cls(api)
+        json = json_lib.loads(Utils.fix_json_string(data))
+        setattr(initdata,'at',json_lib.loads(json[0][1][1])["1"][15])
+        return initdata
+
 class SelfInfo(Model):
     @classmethod
     def parse(cls,method,data):
@@ -491,6 +500,7 @@ class Raw(Model):
 class ModelFactory(object):
     selfinfo = SelfInfo
     userinfo = UserInfo
+    initdata1 = InitData1
     postinfo = PostInfo
     notifications = Notifications
     followers = Followers

@@ -10,7 +10,6 @@ from pygplus.builder import Builder
 
 __all__ = ['ApiHandler']
 
-# TODO: 各API関数のdocstringを書く
 # TODO: atがなくてもうごくっぽい。 要調査
 
 class ApiHandler(object):
@@ -36,11 +35,11 @@ class ApiHandler(object):
 
         self.self_info = self.__get_self_info()
         self.user_id = self.self_info.user_id
-        self.pages = self.self_info.pages
+        self.pages = self.self_info.pages # これでもとれる。 https://plus.google.com/_/pages/get/
         if at:
             self.at = at
         else:
-            self.at = self.get_user_info(user_id=self.user_id).at
+            self.at = self.__get_init_data(1).at
         self.followers = None
         self.followings = None
         self.own_circles = None
@@ -73,6 +72,88 @@ class ApiHandler(object):
 
         return result
 
+    def __get_init_data(self,key):
+        """
+
+        """
+        api_method_path = "/_/initialdata?"
+        params = {
+            '_reqid': Utils.gen_reqid(6),
+            'rt':'j',
+            'key':key,
+            }
+        api_method_path += urllib.urlencode(params)
+        required_auth = True
+        method_post = False
+        # 有効key
+        # 1:    at取得専用
+        # 2:    自身のプロフィール
+        # 7:    Unknown
+        # 8:    Unknown
+        # 11:   投稿用のobj
+        # 12:   Circles
+        # 14:   投稿用のobj
+        # 16:   FollowerかFollowing
+        # 21:   Unknown
+        # 22:   Unknown
+        # 23:   Unknown
+        # 26:   Unknown
+        # 29:   Unknown
+        # 30:   Webサービスのfavicon url?
+        # 31:   Webサービスのauth用url?
+        # 32:   Unknown
+        # 34:   Unknown
+        # 35:   Unknown
+        # 36:   Country code
+        # 37:   Unknown
+        # 39:   Unknown
+        # 42:   Unknown
+        # 43:   Unknown
+        # 44:   Unknown
+        # 46:   Unknown
+        # 47:   Unknown
+        # 48:   Unknown
+        # 50:   自身のScreen Name
+        # 52:   よくわからないけれど周辺のなにか？
+        # 53:   Unknown
+        # 54:   Unknown
+        # 56:   自身の簡易プロフィール
+        # 58:   よくわからないけれど周辺のなにか？
+        # 62:   自身の写真?
+        # 64:   Unknown
+        # 67:   なにかの住所
+        # 70:   Circle ID?
+        # 73:   Unknown
+        # 75:   自分のEmailアドレス
+        # 76:   Unknown
+        # 77:   ユーザ情報があるけど何かわからない
+        # 78:   Unknown
+        # 79:   Unknown
+        # 84:   Unknown
+        # 85:   Unknown
+        # 86:   Unknown
+        # 87:   Google 表示言語
+        # 89:   ユーザ情報があるけど何かわからない
+        # 90:   Unknown
+        # 91:   Unknown
+        # 92:   Unknown
+        # 95:   Unknown
+        # 97:   Unknown
+        # 99:   Unknown
+        # 100:  投稿用のobj
+        # 101:  Unknown
+        if key == 1:
+            model = "initdata1"
+        else:
+            raise PyGplusErrors("key:%dはサポートされていません。") % key
+        binder = ApiBinder(api=self,
+            api_method_path=api_method_path,
+            required_auth=required_auth,
+            method_post=method_post
+        )
+        result = binder.execute(model)
+        return result
+
     def get_user_info(self,user_id,next_id=None,next_obj=None):
         """
         ユーザ情報を取得します。
@@ -86,7 +167,7 @@ class ApiHandler(object):
         Exceptions:
             none
         """
-        # https://plus.google.com/u/0/_/pages/getidentities/?hl=ja&_reqid=167621&rt=j # 自分の場合はこれでいい
+        #　https://plus.google.com/u/0/_/profiles/get/+user_idもある
         api_method_path = "/%s/about" % str(user_id)
         required_auth = True
         method_post = False
