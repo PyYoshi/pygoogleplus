@@ -202,10 +202,8 @@ class UserInfo(Model):
         userinfo = cls(api)
         scripts = Utils.extract_initdata_json_string_list(data)
         for script in scripts:
-            #json = json_lib.loads(script['data'])
             json = json_lib.loads(script['data'])
             if script['key'] == '5':
-                print script['data']
                 setattr(userinfo,'user_id',json[0])
                 setattr(userinfo,'user_icon_url','https:'+json[2][3])
                 setattr(userinfo,'first_name',json[2][4][1])
