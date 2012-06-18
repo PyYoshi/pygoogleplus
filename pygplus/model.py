@@ -70,8 +70,11 @@ class Posts(Model):
             setattr(pst,'comments',comments)
             media = {}
             if post_json[11] != None and post_json[11] != []:
-                media_type = post_json[11][0][24][4]
-                media['type'] = media_type
+                try:
+                    media_type = post_json[11][0][24][4]
+                    media['type'] = media_type
+                except IndexError:
+                    media_type = "html"
                 if media_type == 'image':
                     images = []
                     for images_json in post_json[11]:
@@ -120,6 +123,12 @@ class Posts(Model):
                             favicons.append(favicon_json[1])
                     document['favicon'] = favicons
                     media['document'] = document
+                elif media_type == "html":
+                    html_json = post_json[11]
+                    html = {
+                        'html':html_json[0][3]
+                    }
+                    media['html'] = html
                 else:
                     media[media_type] = post_json[11]
                 setattr(pst,'media',media)
@@ -193,14 +202,16 @@ class UserInfo(Model):
         userinfo = cls(api)
         scripts = Utils.extract_initdata_json_string_list(data)
         for script in scripts:
+            #json = json_lib.loads(script['data'])
             json = json_lib.loads(script['data'])
             if script['key'] == '5':
+                print script['data']
                 setattr(userinfo,'user_id',json[0])
                 setattr(userinfo,'user_icon_url','https:'+json[2][3])
                 setattr(userinfo,'first_name',json[2][4][1])
                 setattr(userinfo,'family_name',json[2][4][2])
                 setattr(userinfo,'screen_name',json[2][4][3])
-                setattr(userinfo,'other_names',json[2][5][1][0][0])
+                #setattr(userinfo,'other_names',json[2][5][1][0][0])
                 setattr(userinfo,'occupation',json[2][6][1])
                 setattr(userinfo,'places_lived',json[2][9][2][0])
                 setattr(userinfo,'introduction',json[2][14][1])
