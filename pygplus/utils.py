@@ -10,7 +10,7 @@ import time
 
 from pygplus.errors import PyGplusErrors
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 __all__ = ['Utils']
 
@@ -89,7 +89,7 @@ class Utils(object):
 
     @staticmethod
     def extract_initdata_json_string_list(str):
-        soup = BeautifulSoup(str)
+        soup = BeautifulSoup(str,from_encoding="utf-8")
         scripts = []
         for script in soup.findAll('script'):
             line = ''
