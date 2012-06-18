@@ -35,3 +35,5 @@ login.cjar
 settings.py
 doc/
 doc/_build
+profile.png
+nose.prof

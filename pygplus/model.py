@@ -56,6 +56,7 @@ class Posts(Model):
         api = method.api
         results = []
         for post_json in data_list:
+            #print json_lib.dumps(post_json)
             pst = cls(api)
             setattr(pst,'author',post_json[3])
             setattr(pst,'author_id',post_json[5])
@@ -80,12 +81,16 @@ class Posts(Model):
                     for images_json in post_json[11]:
                         image = {
                             'image_url':images_json[5][1],
-                            'height':images_json[5][2],
-                            'width':images_json[5][3],
                             'filename':images_json[21],
                             'album_url':images_json[24][1],
                             'mimetype':images_json[24][3],
                         }
+                        try:
+                            image['height'] = images_json[5][2]
+                            image['width'] = images_json[5][3]
+                        except IndexError:
+                            image['height'] = None
+                            image['width'] = None
                         images.append(image)
                     media['images'] = images
 
@@ -204,6 +209,7 @@ class UserInfo(Model):
         for script in scripts:
             json = json_lib.loads(script['data'])
             if script['key'] == '5':
+                #print script['data']
                 setattr(userinfo,'user_id',json[0])
                 setattr(userinfo,'user_icon_url','https:'+json[2][3])
                 setattr(userinfo,'first_name',json[2][4][1])
@@ -435,6 +441,7 @@ class Dashboard(Model):
         for script in scripts:
             json = json_lib.loads(script['data'])
             if script['key'] == '4':
+                #print script['data']
                 posts = Posts.parse(method,json[0])
                 setattr(dashboard,'posts',posts)
                 setattr(dashboard,'next_id',json[1])

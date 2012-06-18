@@ -10,6 +10,14 @@ from pygplus.api_handler import ApiHandler
 from pygplus.builder import Builder
 import cookielib
 
+import time
+
+#start = time.time()
+#end = time.time()
+#print end - start
+
+other_user_id = "109813896768294978296" # Sergey Brin
+
 # cookieをファイルへ保存
 #auth = AuthHandler(email=settings.EMAIL,passwd=settings.PASSWD)
 #auth.save_cookie(settings.CJAR_PATH)
@@ -21,8 +29,7 @@ auth = AuthHandler(cookie=cookie)
 api = ApiHandler(auth_handler=auth)
 
 ##print api.at
-
-##print api.get_user_info().__dict__
+#print api.get_user_info(other_user_id).__dict__
 #prof = api.get_user_info()
 #print prof.__dict__
 ##print prof.__dict__
@@ -51,8 +58,13 @@ api = ApiHandler(auth_handler=auth)
 ##print api.get_notification().__dict__
 ##print api.get_dashboard().__dict__
 ##print '================================================================'
-##dashboard = api.get_dashboard()
-##print dashboard.posts
+
+start = time.time()
+dashboard = api.get_dashboard()
+end = time.time()
+print end - start
+print dashboard.posts
+
 ##next_id = dashboard.next_id
 ##next_obj = dashboard.next_obj
 ##print next_obj

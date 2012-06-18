@@ -10,8 +10,6 @@ from pygplus.builder import Builder
 
 __all__ = ['ApiHandler']
 
-# TODO: atがなくてもうごくっぽい。 要調査
-
 class ApiHandler(object):
     """ 叩けるAPIの関数群 """
     def __init__(self,auth_handler,at=None,retry_times=0,retry_delay=0):
@@ -19,7 +17,7 @@ class ApiHandler(object):
         APIHandlerのコンストラクタ
         Args:
             auth_handler: AuthHandler, Google+にログインする際に必要な引数。
-            at: str, ApiHandler.get_user_info()を実行するコストが気に入らない場合は、ここに自分のatを代入してください。
+            at: str, 余計な通信コストが気になる場合は入力してください。
             retry_times: int, APIの実行に失敗した際に試行する回数。
             retry_delay: int, APIの実行に失敗した際に試行する際のラグ。
         Returns:
@@ -74,17 +72,15 @@ class ApiHandler(object):
 
     def __get_init_data(self,key):
         """
+        G+の初期化に使われているデータの取得
+        Args:
+            key: int, 今のところ1のみ
+        Returns:
+            InitData1(Model)
+        Exceptions:
+            PyGplusError
 
-        """
-        api_method_path = "/_/initialdata?"
-        params = {
-            '_reqid': Utils.gen_reqid(6),
-            'rt':'j',
-            'key':key,
-            }
-        api_method_path += urllib.urlencode(params)
-        required_auth = True
-        method_post = False
+        Memo:
         # 有効key
         # 1:    at取得専用
         # 2:    自身のプロフィール
@@ -142,6 +138,17 @@ class ApiHandler(object):
         # 99:   Unknown
         # 100:  投稿用のobj
         # 101:  Unknown
+        """
+        api_method_path = "/_/initialdata?"
+        params = {
+            '_reqid': Utils.gen_reqid(6),
+            'rt':'j',
+            'key':key,
+            }
+        api_method_path += urllib.urlencode(params)
+        required_auth = True
+        method_post = False
+
         if key == 1:
             model = "initdata1"
         else:
